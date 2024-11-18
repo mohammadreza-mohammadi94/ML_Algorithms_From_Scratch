@@ -2,7 +2,9 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
+Classification
+Clustering
+TODO.txt
 # C extensions
 *.so
 
