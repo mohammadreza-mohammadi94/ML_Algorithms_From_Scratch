@@ -9,6 +9,7 @@ TODO.txt
 *.so
 test_codes.ipynb
 ipynb_checkpoints
+Desing/*
 
 # Distribution / packaging
 .Python
