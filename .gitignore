@@ -7,6 +7,8 @@ Clustering/
 TODO.txt
 # C extensions
 *.so
+test_codes.ipynb
+ipynb_checkpoints
 
 # Distribution / packaging
 .Python
