@@ -46,11 +46,7 @@ The repository includes the following algorithms:
 
 2. Explore the code for individual algorithms located in the respective subdirectories.
 
-3. Run the scripts directly to test their functionality:
-   ```bash
-   python algorithm_name.py
-   ```
-
+3. Run the scripts directly to test their functionality
 ---
 
 ## Contributing
