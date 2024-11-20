@@ -37,3 +37,23 @@ print("Lasso Regression Evaluation:")
 print(f"Mean Squared Error (MSE): {mse:.4f}")
 print(f"Mean Absolute Error (MAE): {mae:.4f}")
 print(f"R² Score: {r2:.4f}")
+
+
+#===============================================================================#
+#================== Compare With Lasso From Scikit-learn ==================#
+print("="*50)
+print("Lasso Model From Scikit-learn:")
+
+from sklearn.linear_model import Lasso
+
+model = Lasso()
+model.fit(X_train, y_train)
+y_pred_model = model.predict(X_test)
+
+mse_2 = mean_squared_error(y_test, y_pred)
+mae_2 = mean_absolute_error(y_test, y_pred)
+r2_2= r2_score(y_test, y_pred)
+
+print(f"Mean Squared Error (MSE): {mse_2:.4f}")
+print(f"Mean Absolute Error (MAE): {mae_2:.4f}")
+print(f"R² Score: {r2_2:.4f}")
