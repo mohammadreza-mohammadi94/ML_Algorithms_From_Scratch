@@ -4,7 +4,7 @@
 #      LinkedIn: https://www.linkedin.com/in/mohammadreza-mhmdi/      #
 #---------------------------------------------------------------------#
 
-
+# Import Libraries
 from Regression.base import BaseRegression
 import numpy as np
 
@@ -161,6 +161,107 @@ class LassoRegression(BaseRegression):
             self.theta[1:] = self._soft_threshold(self.theta[1:] - self.learning_rate * gradients, 
                                                   self.lambda_ * self.learning_rate)
 
+            # Check for convergence
+            if np.all(np.abs(self.theta - prev_theta) < 1e-6):
+                break
+            prev_theta = self.theta.copy()
+
+class Elasticnet(BaseRegression):
+    """
+    ElasticNet Regression model with combined L1 (Lasso) and L2 (Ridge) regularization.
+
+    Parameters:
+    ----------
+    learning_rate : float
+        The learning rate for gradient descent.
+    lambda_1 : float
+        Regularization strength for L1 penalty.
+    lambda_2 : float
+        Regularization strength for L2 penalty.
+    n_iterations : int
+        Number of iterations for gradient descent.
+    """
+
+    def __init__(self,
+                 learning_rate=0.01, 
+                 lambda_1=1.0,
+                 lambda_2=1.0,
+                 n_iterations=1000):
+        super().__init__()
+        self.learning_rate = learning_rate
+        self.lambda_1 = lambda_1
+        self.lambda_2 = lambda_2
+        self.n_iterations = n_iterations
+
+    def _soft_threshold(self, z, lambda_):
+        """
+        Apply the soft-thresholding operator to encourage sparsity.
+        
+        Parameters:
+        ----------
+        z : float
+            The value to threshold.
+            z refers to the coefficient or weight of specific feature
+            in the regression model that is being updated during optimization.
+        lambda_ : float
+            The regularization parameter.
+
+        Returns:
+        -------
+        float
+            Thresholded value.
+        -------------------------------------------
+        The _soft_threshold() method is an implementation of the soft-thresholding
+        operator used in Lasso Regression (and other L1 regularized models).
+        Its purpose is to encourage sparsity in the model's coefficients by
+        shrinking some coefficients to zero during the training process.
+
+        During the optimization of Lasso, the gradient descent updates the coefficients.
+        The soft-thresholding function is used to modify the coefficients after 
+        the gradient update. This ensures that some coefficients become zero,
+        effectively selecting the most relevant features.
+        Example:
+        if the current coefficient is large, it get reduced by lambda_
+        if the coefficient is small(near to zero), it is forced to zero.
+
+        Conditions:
+        - if z is greater than lambda_, the coefficient is reduced by lambda_
+        - if z is less than -lambda_, the coefficient is increased by lambda_
+        - if the abs value of z is less/euqal than to lambda_, the coefficient,
+            is set to zero, which is the key to enforcing sparsity.
+        """
+        return np.sign(z) * np.maximum(np.abs(z) - lambda_, 0)
+
+    def fit(self, X, y):
+        """
+        Fit the ElasticNet Regression model to the training data.
+
+        Parameters:
+        ----------
+        X : numpy.ndarray
+            Input feature matrix of shape (m, n).
+        y : numpy.ndarray
+            Target values of shape (m,).
+        """
+
+        m, n = X.shape # Rows, Cols
+        X = np.c_[np.ones(m), X]
+        self.theta = np.zeros(n + 1)
+
+        prev_theta = self.theta.copy()
+        for _ in range(self.n_iterations):
+            y_pred = self.predict(X)
+            residual = y - y_pred
+
+            # Update bias 
+            self.theta[0] -= self.learning_rate * (-2 / m) * np.sum(residual)
+
+            # Update weights
+            for j in range(1, n + 1):
+                gradient = (-2 / m) * np.dot(X[:, j], residual) + 2 * self.lambda_2 * self.theta[j]
+                self.theta[j] -= self.learning_rate * gradient
+                self.theta[j] = self._soft_threshold(self.theta[j], self.lambda_1 * self.learning_rate)
+            
             # Check for convergence
             if np.all(np.abs(self.theta - prev_theta) < 1e-6):
                 break
