@@ -266,3 +266,110 @@ class Elasticnet(BaseRegression):
             if np.all(np.abs(self.theta - prev_theta) < 1e-6):
                 break
             prev_theta = self.theta.copy()
+
+class PolynomialRegression:
+    """
+    Polynomial Regression model using Gradient Descent.
+
+    Parameters:
+    ----------
+    degree : int
+        The degree of the polynomial to fit to the data.
+    learning_rate : float
+        The learning rate for gradient descent optimization.
+    n_iterations : int
+        The number of iterations for the gradient descent algorithm.
+    
+    Attributes:
+    ----------
+    theta : numpy.ndarray
+        The model parameters (weights and bias).
+    """
+    def __init__(self,
+                 degree,
+                 learning_rate=0.01,
+                 n_iterations=1000):
+        """
+        Initialize the Polynomial Regression model.
+        
+        Parameters:
+        ----------
+        degree : int, optional
+            The degree of the polynomial. Default is 2.
+        learning_rate : float, optional
+            The learning rate for gradient descent. Default is 0.01.
+        n_iterations : int, optional
+            The number of iterations for gradient descent. Default is 1000.
+        """
+        super().__init__()
+        self.degree = degree
+        self.learning_rate = learning_rate
+        self.n_iterations = n_iterations
+
+    def _add_poly_features(self, X):
+        """
+        Generate polynomial features up to the specified degree.
+
+        Parameters:
+        ----------
+        X : numpy.ndarray
+            Input feature matrix of shape (m, 1), where m is the number of samples.
+
+        Returns:
+        -------
+        numpy.ndarray
+            Transformed feature matrix with polynomial terms up to the given degree.
+        """
+        X_poly = X.copy()
+        for power in range(2, self.degree + 1):
+            X_poly = np.c_[X_poly, X**power]
+        return X_poly
+
+    def fit(self, X, y):
+        """
+        Fit the Polynomial Regression model to the training data using gradient descent.
+
+        Parameters:
+        ----------
+        X : numpy.ndarray
+            Input feature matrix of shape (m, 1), where m is the number of samples.
+        y : numpy.ndarray
+            Target values of shape (m, 1).
+        """
+        X_poly = self._add_poly_features(X)
+        
+        # Add Bias
+        X_poly = np.c_[np.ones(X_poly.shape[0]), X_poly]
+        
+        # Initialize weights correctly
+        self.theta = np.zeros(X_poly.shape[1])  # Match number of features
+        
+        m = len(y)  # Number of samples
+
+        for _ in range(self.n_iterations):
+            y_pred = X_poly.dot(self.theta)
+            residuals = y_pred - y.ravel()
+
+            # Compute the gradient
+            gradients = (2 / m) * X_poly.T.dot(residuals)
+            
+            # Update weights
+            self.theta -= self.learning_rate * gradients
+
+    def predict(self, X):
+        """
+        Predict target values for a given input feature matrix.
+
+        Parameters:
+        ----------
+        X : numpy.ndarray
+            Input feature matrix of shape (m, 1).
+
+        Returns:
+        -------
+        numpy.ndarray
+            Predicted values of shape (m, 1).
+        """
+        X_poly = self._add_poly_features(X)
+        X_poly = np.c_[np.ones(X_poly.shape[0]), X_poly]
+        return X_poly.dot(self.theta)
