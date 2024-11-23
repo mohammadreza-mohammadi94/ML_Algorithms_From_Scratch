@@ -27,12 +27,20 @@ class LinearRegression(BaseRegression):
             Target values of shape(m,)
         """
 
-        # Add intercept term.
-        X = np.c_[np.ones(X.shape[0], 1), X]
+        # Add bias term to X once here
+        X = self._add_bias(X)  # Add the bias term once
+        y = y.reshape(-1, 1)  # Ensure y is a column vector
 
-        # Calculate optimal parameters using NE algorithm
-        self.theta = np.linalg.inv(X.T @ X) @ X.T @ y
+        # Initialize theta
+        self.theta = np.zeros((X.shape[1], 1))  # Match X columns including bias
+        m = len(y)
 
+        for _ in range(self.n_iterations):
+            # Predict without adding the bias term again
+            y_pred = self.predict(X, add_bias=False)  # Pass X without re-adding bias
+            residuals = y_pred - y
+            gradient = (1 / m) * X.T.dot(residuals)
+            self.theta -= self.learning_rate * gradient
 
 class RidgeRegression(BaseRegression):
     """
@@ -154,7 +162,7 @@ class LassoRegression(BaseRegression):
             residual = y - y_pred
 
             # Update bias (intercept term)
-            self.theta[0] -= self.learning_rate * (-2 / m) * np.sum(residual)
+            self.theta[0] -= self.learning_rate * (-2 / m) * np.sum(residual) 
 
             # Update weights
             gradients = (-2 / m) * X[:, 1:].T.dot(residual)  # Gradients for weights
