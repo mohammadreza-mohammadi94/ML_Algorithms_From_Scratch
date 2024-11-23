@@ -5,7 +5,7 @@
 #---------------------------------------------------------------------#
 
 # Import Libraries
-from Regression.base import BaseRegression
+from Design.base import BaseRegression
 import numpy as np
 
 
@@ -26,21 +26,22 @@ class LinearRegression(BaseRegression):
         y: numpy.ndarray
             Target values of shape(m,)
         """
-
         # Add bias term to X once here
-        X = self._add_bias(X)  # Add the bias term once
-        y = y.reshape(-1, 1)  # Ensure y is a column vector
-
-        # Initialize theta
-        self.theta = np.zeros((X.shape[1], 1))  # Match X columns including bias
+        X = self._add_bias(X)  # Add the bias term once 
         m = len(y)
+        y = y.reshape(-1, 1)
+
+        # Initialize theta, including bias
+        self.theta = np.zeros((X.shape[1], 1))  # Now this is (7, 1) since X has 7 columns (6 features + 1 bias term)
 
         for _ in range(self.n_iterations):
-            # Predict without adding the bias term again
-            y_pred = self.predict(X, add_bias=False)  # Pass X without re-adding bias
+            y_pred = self.predict(X, add_bias=False)  # Predict without adding bias term again
             residuals = y_pred - y
-            gradient = (1 / m) * X.T.dot(residuals)
-            self.theta -= self.learning_rate * gradient
+            dw = (1/m) * X.T.dot(residuals)  # Gradient of weights (theta[1:])
+            db = (1/m) * np.sum(residuals)   # Gradient of bias (theta[0])
+
+            self.theta[1:] -= self.learning_rate * dw  # Update weights
+            self.theta[0] -= self.learning_rate * db   # Update bias
 
 class RidgeRegression(BaseRegression):
     """
@@ -52,7 +53,10 @@ class RidgeRegression(BaseRegression):
         alpha: float
             Regularization strength (L2 regularizer)
     """
-    def __init__(self, alpha=1.0):
+    def __init__(self,
+                 learning_rate=0.01,
+                 n_iterations=1000,
+                 alpha=1.0):
         """
         Initialize Ridge Regression with regularization parameter alpha.
         
@@ -61,19 +65,22 @@ class RidgeRegression(BaseRegression):
         alpha : float, optional
             Regularization strength (default is 1.0).
         """
-        super().__init__()
-        self.alpha = alpha
+        super().__init__(learning_rate, n_iterations)
+        self.alpha = alpha  # Regularization strength
 
     def fit(self, X, y):
         # Add intercept term.
-        X = np.c_[np.ones(X.shape[0], 1), X]
+        X = self._add_bias(X)
+        y = y.reshape(-1, 1)
+        self.theta = np.zeros((X.shape[1], 1))
+        m = len(y)
 
-        # Calculate optimal parameters using NE algorithm based on L2 regularizer
-         # Identity matrix for regularization (exclude intercept from regularization)
-        I = np.eye(X.shape[1])
-        I[0, 0] = 0 # Do not regularize the intercept
+        for _ in range(self.n_iterations):
+            y_pred = self.predict(X, add_bias=True)
+            residuals = y_pred - y
+            gradients = (1/m) * X.T.dot(residuals) + (self.alpha / m) * self.theta[1:] # Regularization term.
 
-        self.theta = np.linalg.inv(X.T @ X + self.alpha @ I) @ X.T @ y
+       
 
 
 class LassoRegression(BaseRegression):
