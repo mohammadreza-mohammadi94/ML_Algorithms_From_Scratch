@@ -5,7 +5,7 @@
 #---------------------------------------------------------------------#
 
 import numpy as np
-from Regression.linear_regression import PolynomialRegression
+from Regression.linear_models import PolynomialRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score
 

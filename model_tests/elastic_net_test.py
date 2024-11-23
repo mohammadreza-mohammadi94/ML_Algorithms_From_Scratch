@@ -4,7 +4,7 @@
 #      LinkedIn: https://www.linkedin.com/in/mohammadreza-mhmdi/      #
 #---------------------------------------------------------------------#
 
-from Regression.linear_regression import Elasticnet
+from Regression.linear_models import Elasticnet
 from sklearn.model_selection import train_test_split
 from sklearn.datasets import make_regression
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
